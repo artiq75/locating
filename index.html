@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Locating</title>
+    </head>
+    <body>
+        <main class="dashboard">
+            <aside id="dashboard-panel" class="dashboard-panel">
+                <form class="dashboard-panel-form" id="dashboard-form" action="">
+                    <p>
+                        <label class="form-label" for="title">Titre</label>
+                        <input type="text" name="title" id="title" class="form-control">
+                    </p>
+                    <div class="g2">
+                        <p>
+                            <label class="form-label" for="longitude">Longitude</label>
+                            <input type="text" name="longitude" id="longitude" class="form-control">
+                        </p>
+                        <p>
+                            <label class="form-label" for="latitude">Latitude</label>
+                            <input type="text" name="latitude" id="latitude" class="form-control">
+                        </p>
+                    </div>
+                    <p>
+                        <label for="description" class="form-label">Déscription</label>
+                        <textarea name="description" id="description" cols="30" rows="10" class="form-control"></textarea>
+                    </p>
+                    <div class="g2">
+                        <p>
+                            <label class="form-label" for="date_start">Début</label>
+                            <input type="datetime-local" name="date_start" id="date_start" class="form-control">
+                        </p>
+                        <p>
+                            <label class="form-label" for="date_end">Fin</label>
+                            <input type="datetime-local" name="date_end" id="date_end" class="form-control">
+                        </p>
+                    </div>
+                    <button class="btn btn-primary" type="submit">Ajouter l'évenement</button>
+                </form>
+            </aside>
+            <div id="dashboard-body" class="dashboard-body">
+                <div id="map"></div>
+            </div>
+        </main>
+    </body>
+</html>
