@@ -1,0 +1,12 @@
+#map {
+  overflow: hidden;
+  position: absolute;
+  border-radius: var(--radius);
+  top: 0;
+  bottom: 0;
+  left: 0;
+  margin: 1em;
+  height: calc(100% - 2em);
+  width: calc(100% - 2em);
+  color: var(--primary-color);
+}

@@ -31,6 +31,6 @@ export default class Block {
         html += child
       }
     }
-    return html += `</${this.type}>`
+    return (html += `</${this.type}>`)
   }
 }

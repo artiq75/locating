@@ -1,0 +1,20 @@
+.dashboard {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 500px 1fr;
+}
+
+.dashboard-panel {
+  padding: calc(var(--space) * 2);
+  box-shadow: var(--shadow-sm-left);
+}
+
+.dashboard-panel-form {
+  display: grid;
+  gap: calc(var(--space) * 2);
+}
+
+.dashboard-body {
+  position: relative;
+  padding: calc(var(--space) * 2);
+}

@@ -1,0 +1,18 @@
+.btn {
+  min-width: 100%;
+  border: 1px solid transparent;
+  padding: 1em;
+  border-radius: var(--radius);
+  font: inherit;
+  cursor: pointer;
+  transition: var(--duration);
+}
+
+.btn:hover {
+  filter: brightness(.99);
+}
+
+.btn.btn-primary {
+  background-color: var(--tertiary-color);
+  color: inherit;
+}

@@ -1,0 +1,5 @@
+.g2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: calc(var(--space) * 2);
+}

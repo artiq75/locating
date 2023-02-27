@@ -1,0 +1,19 @@
+.form-label {
+  display: block;
+  margin-bottom: var(--space);
+}
+
+.form-control {
+  box-shadow: var(--shadow-sm);
+  width: 100%;
+  border: 1px solid transparent;
+  background-color: var(--secondary-color);
+  padding: 1em;
+  border-radius: var(--radius);
+  font: inherit;
+  color: inherit;
+}
+
+textarea.form-control {
+  resize: vertical;
+}
