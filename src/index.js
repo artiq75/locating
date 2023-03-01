@@ -1,9 +1,19 @@
 import maplibregl from 'maplibre-gl'
-import { getPopupHtml, getState, isEmpty, setState } from './functions'
+import {
+  trigger,
+  getPopupHtml,
+  getState,
+  isEmpty,
+  on,
+  setState,
+  stateReducer
+} from './functions'
+import { EventType, StateMutationType } from './constants'
 import './css/index.scss'
 
 const form = document.getElementById('dashboard-form')
 const outliner = document.getElementById('dashboard-outliner')
+const formBtn = form.querySelector('button')
 
 const map = new maplibregl.Map({
   container: 'map',
@@ -13,7 +23,7 @@ const map = new maplibregl.Map({
 })
 
 map.on('load', function () {
-  document.dispatchEvent(new Event('render'))
+  trigger(EventType.Render)
 })
 
 map.on('click', function (e) {
@@ -24,45 +34,59 @@ map.on('click', function (e) {
 form.addEventListener('submit', function (e) {
   e.preventDefault()
   const formData = new FormData(form)
-  if (isEmpty(formData.values())) return
-  const data = Object.fromEntries(formData)
-  const state = {
-    id: crypto.randomUUID(),
-    ...data
-  }
-  setState([state, ...getState()])
+  formData.delete('id')
+  if (isEmpty(...formData.values())) return
+  const data = Object.fromEntries(new FormData(form))
+  trigger(EventType.FormSubmit, data)
   form.reset()
 })
 
-document.addEventListener('state.mutate', function (e) {
-  dispatchEvent('render', { detail: e.detail })
+on(EventType.FormSubmit, function (payload) {
+  const type = !payload.id ? StateMutationType.New : StateMutationType.Edit
+  stateReducer(type, payload)
 })
 
-document.addEventListener('render', function (e) {
+on(EventType.StateMutate, function (payload) {
+  trigger(EventType.Render, payload)
+})
+
+on(EventType.Render, function (e) {
   render()
 })
 
-document.addEventListener('event.edit', function (e) {
-  for (const field in e.detail) {
+let isReset = true
+
+document.addEventListener('click', function () {
+  if (!isReset) {
+    form.reset()
+  }
+})
+
+form.addEventListener('reset', function(e) {
+  isReset = true
+  formBtn.innerText = formBtn.dataset.default
+})
+
+on(EventType.StateEdit, function (payload) {
+  isReset = false
+  for (const field in payload) {
     if (form.elements.namedItem(field)) {
-      form.elements.namedItem(field).value = e.detail[field]
+      form.elements.namedItem(field).value = payload[field]
     }
   }
-  form.lastElementChild.innerText = 'Modifier'
+  formBtn.innerText = "Modifier l'evenement"
 })
 
 function onOutlinerItemClick(e) {
+  e.stopPropagation()
   const id = e.target.dataset.id ?? e.target.parentNode.dataset.id
-  switch (e.target.tagName) {
-    case 'BUTTON':
-      if (!confirm('Voulez-vous vraiment ?')) return
-      setState(getState().filter((state) => state.id !== id))
-      break
-    default:
-      const event = getState().find((state) => state.id === id)
-      dispatchEvent('event.edit', event)
-      flyTo(parseFloat(event.longitude), parseFloat(event.latitude))
-      break
+  if (e.target.tagName === 'BUTTON') {
+    if (!confirm('Voulez-vous vraiment ?')) return
+    setState(getState().filter((state) => state.id !== id))
+  } else {
+    const event = getState().find((state) => state.id === id)
+    trigger(EventType.StateEdit, event)
+    flyTo(parseFloat(event.longitude), parseFloat(event.latitude))
   }
 }
 
@@ -114,14 +138,4 @@ function flyTo(longitude, latitude) {
     speed: 1,
     curve: 1
   })
-}
-
-function dispatchEvent(name, payload) {
-  let event = new Event(name)
-  if (payload) {
-    event = new CustomEvent(name, {
-      detail: payload
-    })
-  }
-  document.dispatchEvent(event)
 }

@@ -1,3 +1,5 @@
+import { EventType, StateMutationType, StorageKey } from './constants'
+
 export function getStorage(key) {
   return JSON.parse(localStorage.getItem(key))
 }
@@ -7,7 +9,7 @@ export function setStorage(key, value) {
   return value
 }
 
-export function isEmpty(args) {
+export function isEmpty(...args) {
   for (const arg of args) {
     if (!arg) return true
   }
@@ -19,13 +21,48 @@ export function getPopupHtml(data) {
 }
 
 export function setState(state) {
-  document.dispatchEvent(
-    new CustomEvent('state.mutate', {
-      detail: setStorage('state', state)
-    })
-  )
+  trigger(EventType.StateMutate, setStorage(StorageKey.State, state))
 }
 
 export function getState() {
-  return getStorage('state') || []
+  return getStorage(StorageKey.State) || []
+}
+
+export function trigger(name, payload) {
+  let event = new Event(name)
+  if (payload) {
+    event = new CustomEvent(name, {
+      detail: payload
+    })
+  }
+  document.dispatchEvent(event)
+}
+
+export function on(name, callback) {
+  document.addEventListener(name, (e) => callback(e.detail))
+}
+
+export function stateReducer(type, payload) {
+  let state = getState()
+  switch (type) {
+    case StateMutationType.New:
+      state = [
+        {
+          ...payload,
+          id: crypto.randomUUID()
+        },
+        ...state
+      ]
+      break
+    case StateMutationType.Edit:
+      state = state.map((state) => {
+        if (state.id !== payload.id) return state
+        return payload
+      })
+      break
+    default:
+      state
+      break
+  }
+  setState(state)
 }

@@ -10,6 +10,7 @@
         <main class="dashboard">
             <aside id="dashboard-panel" class="dashboard-panel">
                 <form class="dashboard-panel-form" id="dashboard-form" action="">
+                    <input type="hidden" name="id" id="id">
                     <p>
                         <label class="form-label" for="title">Titre</label>
                         <input type="text" name="title" id="title" class="form-control">
@@ -38,7 +39,7 @@
                             <input type="datetime-local" name="end_date" id="end_date" class="form-control">
                         </p>
                     </div> -->
-                    <button class="btn btn-primary" type="submit">Ajouter l'évenement</button>
+                    <button class="btn btn-primary" type="submit" data-default="Ajouter l'évenement">Ajouter l'évenement</button>
                 </form>
             </aside>
             <div id="dashboard-body" class="dashboard-body">
