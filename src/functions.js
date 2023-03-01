@@ -1,5 +1,3 @@
-import maplibregl from 'maplibre-gl'
-
 export function getStorage(key) {
   return JSON.parse(localStorage.getItem(key))
 }
@@ -25,10 +23,9 @@ export function getPopupHtml(data) {
 }
 
 export function setState(state) {
-  setStorage('state', state)
   document.dispatchEvent(
-    new CustomEvent('state.change', {
-      detail: state
+    new CustomEvent('state.mutate', {
+      detail: setStorage('state', state)
     })
   )
 }

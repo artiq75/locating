@@ -46,27 +46,21 @@ document.addEventListener('form.submit', function (e) {
 })
 
 document.addEventListener('state.mutate', function (e) {
-  for (const removable of removables) {
-    removable.remove()
-  }
-  for (const state of e.detail) {
-    removables.push(newMapEvent(state))
-  }
+  renderMapEvent(e.detail)
 })
 
-document.addEventListener('click', function (e) {
+map.getContainer().addEventListener('click', function (e) {
   if (e.target.tagName !== 'BUTTON' && !e.target.dataset.id) return
-  const id = e.target.dataset.id
-  setState(getState().filter(state => state.id !== id))
+  if (confirm('Voulez-vous vraiment ?')) {
+    const id = e.target.dataset.id
+    setState(getState().filter((state) => state.id !== id))
+  }
 })
 
 function newMapEvent(data) {
   const popup = newMapPopup(data)
   const marker = newMapMarker(data).setPopup(popup)
-  return {
-    id: data.id,
-    ...marker
-  }
+  return Object.defineProperty(marker, 'id', { value: data.id })
 }
 
 function newMapPopup(data) {
@@ -80,4 +74,17 @@ function newMapMarker(data) {
       lat: data.latitude
     })
     .addTo(map)
+}
+
+function clearEvent() {
+  for (const removable of removables) {
+    removable.remove()
+  }
+}
+
+function renderMapEvent(state) {
+  clearEvent()
+  for (const event of state) {
+    removables.push(newMapEvent(event))
+  }
 }
