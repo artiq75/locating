@@ -1,11 +1,14 @@
 .btn {
-  min-width: 100%;
   border: 1px solid transparent;
   padding: 1em;
   border-radius: var(--radius);
   font: inherit;
   cursor: pointer;
   transition: var(--duration);
+}
+
+.btn.small {
+  padding: 0.2em;
 }
 
 .btn:hover {

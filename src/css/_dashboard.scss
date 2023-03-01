@@ -1,12 +1,14 @@
+@import 'outliner';
+
 .dashboard {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 500px 1fr;
+  grid-template-columns: 450px 1fr 250px;
 }
 
 .dashboard-panel {
   padding: calc(var(--space) * 2);
-  box-shadow: var(--shadow-sm-left);
+  box-shadow: var(--shadow-sm-right);
 }
 
 .dashboard-panel-form {

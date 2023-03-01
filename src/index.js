@@ -2,9 +2,8 @@ import maplibregl from 'maplibre-gl'
 import { getPopupHtml, getState, isEmpty, setState } from './functions'
 import './css/index.scss'
 
-let removables = []
-
 const form = document.getElementById('dashboard-form')
+const outliner = document.getElementById('dashboard-outliner')
 
 const map = new maplibregl.Map({
   container: 'map',
@@ -14,9 +13,7 @@ const map = new maplibregl.Map({
 })
 
 map.on('load', function () {
-  for (const state of getState()) {
-    removables.push(newMapEvent(state))
-  }
+  document.dispatchEvent(new Event('render'))
 })
 
 map.on('click', function (e) {
@@ -28,63 +25,103 @@ form.addEventListener('submit', function (e) {
   e.preventDefault()
   const formData = new FormData(form)
   if (isEmpty(formData.values())) return
-  document.dispatchEvent(
-    new CustomEvent('form.submit', {
-      detail: Object.fromEntries(formData)
-    })
-  )
-  form.reset()
-})
-
-document.addEventListener('form.submit', function (e) {
-  const data = e.detail
+  const data = Object.fromEntries(formData)
   const state = {
     id: crypto.randomUUID(),
     ...data
   }
   setState([state, ...getState()])
+  form.reset()
 })
 
 document.addEventListener('state.mutate', function (e) {
-  renderMapEvent(e.detail)
+  dispatchEvent('render', { detail: e.detail })
 })
 
-map.getContainer().addEventListener('click', function (e) {
-  if (e.target.tagName !== 'BUTTON' && !e.target.dataset.id) return
-  if (confirm('Voulez-vous vraiment ?')) {
-    const id = e.target.dataset.id
-    setState(getState().filter((state) => state.id !== id))
+document.addEventListener('render', function (e) {
+  render()
+})
+
+document.addEventListener('event.edit', function (e) {
+  for (const field in e.detail) {
+    if (form.elements.namedItem(field)) {
+      form.elements.namedItem(field).value = e.detail[field]
+    }
   }
+  form.lastElementChild.innerText = 'Modifier'
 })
 
-function newMapEvent(data) {
-  const popup = newMapPopup(data)
-  const marker = newMapMarker(data).setPopup(popup)
-  return Object.defineProperty(marker, 'id', { value: data.id })
+function onOutlinerItemClick(e) {
+  const id = e.target.dataset.id ?? e.target.parentNode.dataset.id
+  switch (e.target.tagName) {
+    case 'BUTTON':
+      if (!confirm('Voulez-vous vraiment ?')) return
+      setState(getState().filter((state) => state.id !== id))
+      break
+    default:
+      const event = getState().find((state) => state.id === id)
+      dispatchEvent('event.edit', event)
+      flyTo(parseFloat(event.longitude), parseFloat(event.latitude))
+      break
+  }
 }
 
-function newMapPopup(data) {
-  return new maplibregl.Popup().setHTML(getPopupHtml(data))
+function render() {
+  renderMapEvent()
+  renderOutliner()
 }
 
-function newMapMarker(data) {
-  return new maplibregl.Marker()
-    .setLngLat({
-      lng: data.longitude,
-      lat: data.latitude
+function renderMapEvent() {
+  map.getCanvasContainer().replaceChildren(map.getCanvas())
+  for (const event of getState()) {
+    const popup = new maplibregl.Popup().setHTML(getPopupHtml(event))
+    new maplibregl.Marker()
+      .setLngLat({
+        lng: event.longitude,
+        lat: event.latitude
+      })
+      .setPopup(popup)
+      .addTo(map)
+  }
+}
+
+function renderOutliner() {
+  const fragment = document.createDocumentFragment()
+  for (const state of getState()) {
+    fragment.appendChild(newOutlinerItem(state))
+  }
+  outliner.replaceChildren(fragment)
+}
+
+function newOutlinerItem(event) {
+  const container = document.createElement('div')
+  container.classList.add('outliner-item')
+  container.dataset.id = event.id
+  container.addEventListener('click', onOutlinerItemClick)
+  const title = container.appendChild(document.createElement('p'))
+  title.innerText = event.title
+  const cancel = container.appendChild(document.createElement('button'))
+  cancel.classList.add('btn', 'small')
+  cancel.innerText = 'Annuler'
+  return container
+}
+
+function flyTo(longitude, latitude) {
+  map.flyTo({
+    center: [longitude, latitude],
+    essential: true,
+    zoom: 7,
+    speed: 1,
+    curve: 1
+  })
+}
+
+function dispatchEvent(name, payload) {
+  let event = new Event(name)
+  if (payload) {
+    event = new CustomEvent(name, {
+      detail: payload
     })
-    .addTo(map)
-}
-
-function clearEvent() {
-  for (const removable of removables) {
-    removable.remove()
   }
-}
-
-function renderMapEvent(state) {
-  clearEvent()
-  for (const event of state) {
-    removables.push(newMapEvent(event))
-  }
+  document.dispatchEvent(event)
 }

@@ -15,11 +15,7 @@ export function isEmpty(args) {
 }
 
 export function getPopupHtml(data) {
-  return (
-    `<h2>${data.title}</h2>` +
-    `<p>${data.description}</p>` +
-    `<button class="event-remove-btn" data-id="${data.id}">annuler</button>`
-  )
+  return `<h2>${data.title}</h2>` + `<p>${data.description}</p>`
 }
 
 export function setState(state) {
@@ -33,4 +29,3 @@ export function setState(state) {
 export function getState() {
   return getStorage('state') || []
 }
-
