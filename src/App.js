@@ -1,28 +1,30 @@
-import mapboxgl from 'mapbox-gl'
 import Singleton from './Singleton'
 import Helper from './Helper'
-import { getPopupHtml, getState, setState, stateReducer } from './functions'
+import Map from './Map'
+import { getState, setState, stateReducer } from './functions'
 import { EventType, StateMutationType } from './constants'
 
+const MAP_OPTIONS = Object.freeze({
+  container: 'map',
+  style: 'https://demotiles.maplibre.org/style.json',
+  center: [2, 47],
+  zoom: 4,
+  clickTolerance: 10,
+  doubleClickZoom: false,
+  dragRotate: false
+})
+
 export default class App extends Singleton {
+  map = {}
+
   isEdit = false
-  
+
   outlinerItem = null
 
   constructor() {
     super()
 
-    mapboxgl.accessToken = process.env.MAPBOX_TOKEN_KEY
-
-    this.map = new mapboxgl.Map({
-      container: 'map',
-      style: 'mapbox://styles/mapbox/streets-v11',
-      center: [2, 47],
-      zoom: 4,
-      clickTolerance: 10,
-      doubleClickZoom: false,
-      dragRotate: false
-    })
+    this.map = new Map(MAP_OPTIONS)
 
     this.form = document.getElementById('dashboard-form')
     this.outliner = document.getElementById('dashboard-outliner')
@@ -38,8 +40,11 @@ export default class App extends Singleton {
     document.addEventListener('click', this.onClick.bind(this))
     document.addEventListener(EventType.StateEdit, this.onStateEdit.bind(this))
     document.addEventListener(EventType.StateMutate, this.onStateMutate)
-    document.addEventListener(EventType.FormSubmit, this.onFormSubmit.bind(this))
     document.addEventListener(EventType.Render, this.onRender.bind(this))
+    document.addEventListener(
+      EventType.FormSubmit,
+      this.onFormSubmit.bind(this)
+    )
   }
 
   onMapLoad() {
@@ -71,7 +76,9 @@ export default class App extends Singleton {
       this.isEdit = true
       const event = getState().find((state) => state.id === id)
       Helper.dispatchEvent(EventType.StateEdit, event)
-      this.flyTo(parseFloat(event.longitude), parseFloat(event.latitude))
+      this.map.flyTo({
+        center: [parseFloat(event.longitude), parseFloat(event.latitude)]
+      })
     }
   }
 
@@ -120,17 +127,14 @@ export default class App extends Singleton {
 
   renderMapEvent() {
     this.map.getCanvasContainer().replaceChildren(this.map.getCanvas())
-    for (const event of getState()) {
-      const popup = new mapboxgl.Popup().setHTML(getPopupHtml(event))
-      new mapboxgl.Marker({
-        draggable: true
-      })
-        .setLngLat({
-          lng: event.longitude,
-          lat: event.latitude
+    for (const state of getState()) {
+      this.map
+        .newMarker({
+          color: '#1E3348',
+          lng: state.longitude,
+          lat: state.latitude
         })
-        .setPopup(popup)
-        .addTo(this.map)
+        .setPopup(this.map.newPopup().setHTML(this.getPopupHTML(state)))
     }
   }
 
@@ -155,13 +159,7 @@ export default class App extends Singleton {
     return container
   }
 
-  flyTo(longitude, latitude) {
-    this.map.flyTo({
-      center: [longitude, latitude],
-      essential: true,
-      zoom: 7,
-      speed: 1,
-      curve: 1
-    })
+  getPopupHTML(state) {
+    return `<h2>${state.title}</h2>` + `<p>${state.description}</p>`
   }
 }

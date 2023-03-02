@@ -20,8 +20,6 @@
     "webpack-dev-server": "^4.11.1"
   },
   "dependencies": {
-    "mapbox-gl": "^2.13.0",
-    "maplibre-gl": "^2.4.0",
-    "three": "^0.150.0"
+    "mapbox-gl": "^2.13.0"
   }
 }
