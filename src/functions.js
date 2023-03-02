@@ -1,54 +1,29 @@
 import { EventType, StateMutationType, StorageKey } from './constants'
-
-export function getStorage(key) {
-  return JSON.parse(localStorage.getItem(key))
-}
-
-export function setStorage(key, value) {
-  localStorage.setItem(key, JSON.stringify(value))
-  return value
-}
-
-export function isEmpty(...args) {
-  for (const arg of args) {
-    if (!arg) return true
-  }
-  return false
-}
+import Storage from './Storage'
+import Helper from './Helper'
 
 export function getPopupHtml(data) {
   return `<h2>${data.title}</h2>` + `<p>${data.description}</p>`
 }
 
 export function setState(state) {
-  trigger(EventType.StateMutate, setStorage(StorageKey.State, state))
+  Helper.dispatchEvent(
+    EventType.StateMutate,
+    Storage.set(StorageKey.State, state)
+  )
 }
 
 export function getState() {
-  return getStorage(StorageKey.State) || []
+  return Storage.get(StorageKey.State) || []
 }
 
-export function trigger(name, payload) {
-  let event = new Event(name)
-  if (payload) {
-    event = new CustomEvent(name, {
-      detail: payload
-    })
-  }
-  document.dispatchEvent(event)
-}
-
-export function on(name, callback) {
-  document.addEventListener(name, (e) => callback(e.detail))
-}
-
-export function stateReducer(type, payload) {
+export function stateReducer(type, detail) {
   let state = getState()
   switch (type) {
     case StateMutationType.New:
       state = [
         {
-          ...payload,
+          ...detail,
           id: crypto.randomUUID()
         },
         ...state
@@ -56,8 +31,8 @@ export function stateReducer(type, payload) {
       break
     case StateMutationType.Edit:
       state = state.map((state) => {
-        if (state.id !== payload.id) return state
-        return payload
+        if (state.id !== detail.id) return state
+        return detail
       })
       break
     default:
