@@ -110,8 +110,8 @@ export default class App extends Singleton {
     this.formBtn.innerText = "Modifier l'evenement"
   }
 
-  onStateMutate(payload) {
-    Helper.dispatchEvent(EventType.Render, payload)
+  onStateMutate({ detail }) {
+    Helper.dispatchEvent(EventType.Render, detail)
   }
 
   onFormSubmit({ detail }) {
